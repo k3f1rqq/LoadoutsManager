@@ -140,19 +140,19 @@ LoadGlobalSettings()
     global Settings, SettingsFile
 
     SwapSettings["CurrentPreset"] :=
-        IniRead(SettingsFile, "Global", "CurrentPreset", "hunter")
+        IniRead(SettingsFile, "Global", "CurrentPresetUI", "hunter")
 
     SwapSettings["DL3074Hotkey"] :=
-        IniRead(SettingsFile, "Global", "DL3074Hotkey", "None")
+        IniRead(SettingsFile, "Global", "DL3074HotkeyUI", "None")
 
     SwapSettings["OpenMenuHotkey"] :=
-        IniRead(SettingsFile, "Global", "OpenMenuHotkey", "None")
+        IniRead(SettingsFile, "Global", "OpenMenuHotkeyUI", "None")
 
     SwapSettings["UL27kHotkey"] :=
-        IniRead(SettingsFile, "Global", "UL27kHotkey", "None")
+        IniRead(SettingsFile, "Global", "UL27kHotkeyUI", "None")
 
     SwapSettings["UL3074Hotkey"] :=
-        IniRead(SettingsFile, "Global", "UL3074Hotkey", "None")
+        IniRead(SettingsFile, "Global", "UL3074HotkeyUI", "None")
 }
 
 LoadSwapHotkeys()
@@ -193,61 +193,61 @@ LoadLoadout(section)
 
         "swapCount",
         Integer(
-            IniRead(SettingsFile, section, "swapCount", 20)
+            IniRead(SettingsFile, section, "swapCountUI", 20)
         ),
 
 
         "untickDelay",
         Integer(
-            IniRead(SettingsFile, section, "untickDelay", 550)
+            IniRead(SettingsFile, section, "untickDelayUI", 550)
         ),
 
 
         "loadoutDelay",
         Integer(
-            IniRead(SettingsFile, section, "loadoutDelay", 40)
+            IniRead(SettingsFile, section, "loadoutDelayUI", 40)
         ),
 
 
         "finalLoadout",
         Integer(
-            IniRead(SettingsFile, section, "finalLoadout", 1)
+            IniRead(SettingsFile, section, "finalLoadoutUI", 1)
         ),
 
 
         "advancedDelay",
         Integer(
-            IniRead(SettingsFile, section, "advancedDelay", 1)
+            IniRead(SettingsFile, section, "advancedDelayUI", 1)
         ),
 
 
         "closeInventory",
         Integer(
-            IniRead(SettingsFile, section, "closeInventory", 1)
+            IniRead(SettingsFile, section, "closeInventoryUI", 1)
         ),
 
 
         "dl3074",
         Integer(
-            IniRead(SettingsFile, section, "dl3074", 0)
+            IniRead(SettingsFile, section, "dl3074UI", 0)
         ),
 
 
         "swapTimer",
         Integer(
-            IniRead(SettingsFile, section, "swapTimer", 1)
+            IniRead(SettingsFile, section, "swapTimerUI", 1)
         ),
 
 
         "SelectedGear",
-        IniRead(SettingsFile, section, "SelectedGear", "Helmet"),
+        IniRead(SettingsFile, section, "SelectedGearUI", "Helmet"),
 
 
         "selectedLoadouts",
         OptimizeLoadouts(
-            IniRead(SettingsFile, section, "selectedLoadouts", ""),
+            IniRead(SettingsFile, section, "selectedLoadoutsUI", ""),
             Integer(
-                IniRead(SettingsFile, section, "finalLoadout", 1)
+                IniRead(SettingsFile, section, "finalLoadoutUI", 1)
             )
         )
     )
@@ -387,8 +387,11 @@ LoadoutSwap(x, y, load_test_x) {
                         Round(gear.y * ScaleY),
                     )
 
-    if (loadout["swapTimer"] && !((WatchChanges > loadout["swapCount"]|| start + Timeout <= A_TickCount)) && WatchChanges >= 0)
-        ToolTip(WatchChanges . "/" . loadout["swapCount"], 73 * ScaleX, 820 * ScaleY, 1)
+    if (loadout["swapTimer"] && !((WatchChanges > loadout["swapCount"]|| start + Timeout <= A_TickCount)))
+        if WatchChanges > 0
+            ToolTip(WatchChanges . "/" . loadout["swapCount"] . ",`n" . SwapTime . "s", 73 * ScaleX, 820 * ScaleY, 1)
+        if WatchChanges <= 0
+            ToolTip("0/" . loadout["swapCount"] . ",`n" . SwapTime . "s", 73 * ScaleX, 820 * ScaleY, 1)
 
     MouseMove(
         Round(x * ScaleX), 
@@ -441,6 +444,8 @@ WatchPixel(x, y)
 {
     global WatchLast
     global WatchChanges
+    global SwapTime
+    global start_swap_click
 
     c := PixelGetColor(
                         x,
@@ -452,6 +457,11 @@ WatchPixel(x, y)
         WatchChanges++
         WatchLast := c
     }
+    if (start_swap_click == 0){
+        start_swap_click := A_TickCount
+    }
+    SwapTime := Round(((A_TickCount - start_swap_click + 360)/1000),2)
+
 }
 
 SendModified(key)
@@ -628,7 +638,7 @@ WaitForLoadoutScreen()
             (RegExMatch(loadoutColor, "0xE.E.E.") 
             || RegExMatch(loadoutColor, "0xD.D.D.")
             || LoadoutMenuStateCheck
-            || A_TickCount >= start2 + 500)
+            || A_TickCount >= start2 + 1500)
         )
             return True
     }
@@ -641,6 +651,11 @@ WaitForLoadoutScreen()
 
 Swaps(mode)
 {
+
+global SwapTime := Round(0.16 ,2)
+global start_swap_click := 0
+global WatchChanges := -1
+global Watching := false
 
 global LoadoutMenuStateCheck, oldXSwap
 
@@ -680,8 +695,6 @@ WaitForLoadoutScreen()
 
 PreciseSleep(50)
 
-global Watching := true
-global WatchChanges := -1
 global start := A_TickCount
 Loop
 {
@@ -695,13 +708,17 @@ Loop
         }
     }
 
+    if (start + 200 <= A_TickCount)
+    {
+        global Watching := true
+    }
+
     if (WatchChanges >= loadout["swapCount"]|| start + Timeout <= A_TickCount)
     {
         break
     }
 }
 global Watching := false
-time := round((A_TickCount-start)/1000, 2)
 LoadoutInfo := LoadoutPositions[FL]
 WatchChanges++
 LoadoutSwap(LoadoutInfo.x, LoadoutInfo.y, LoadoutInfo.Test)

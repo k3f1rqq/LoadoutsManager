@@ -105,92 +105,92 @@ global Profiles := Map()
 ; --- Settings Schema --- ;
 
 global SettingsSchema := {
-    CurrentPreset:{
+    CurrentPresetUI:{
         section:"Global",
         scope:"global",
         type:"string",
         default:"hunter"
     },
-    OpenMenuHotkey:{
+    OpenMenuHotkeyUI:{
         section:"Global",
         scope:"global",
         type:"hotkey",
         default:"None"
     },
-    UL3074Hotkey:{
+    UL3074HotkeyUI:{
         section:"Global",
         scope:"global",
         type:"hotkey",
         default:"None"
     },
-    DL3074Hotkey:{
+    DL3074HotkeyUI:{
         section:"Global",
         scope:"global",
         type:"hotkey",
         default:"None"
     },
-    UL27kHotkey:{
+    UL27kHotkeyUI:{
         section:"Global",
         scope:"global",
         type:"hotkey",
         default:"None"
     },
 
-    swapCount:{
+    swapCountUI:{
         section:"Profile",
         scope:"profile",
         type:"number",
         default:20
     },
-    untickDelay:{
+    untickDelayUI:{
         section:"Profile",
         scope:"profile",
         type:"number",
         default:550
     },
-    loadoutDelay:{
+    loadoutDelayUI:{
         section:"Profile",
         scope:"profile",
         type:"number",
         default:40
     },
-    finalLoadout:{
+    finalLoadoutUI:{
         section:"Profile",
         scope:"profile",
         type:"number",
         default:1
     },
-    advancedDelay:{
+    advancedDelayUI:{
         section:"Profile",
         scope:"profile",
         type:"toggle",
         default:true
     },
-    closeInventory:{
+    closeInventoryUI:{
         section:"Profile",
         scope:"profile",
         type:"toggle",
         default:true
     },
-    dl3074:{
+    dl3074UI:{
         section:"Profile",
         scope:"profile",
         type:"toggle",
         default:false
     },
-    swapTimer:{
+    swapTimerUI:{
         section:"Profile",
         scope:"profile",
         type:"toggle",
         default:true
     },
-    selectedLoadouts:{
+    selectedLoadoutsUI:{
         section:"Profile",
         scope:"profile",
         type:"loadoutList",
         default:[]
     },
-    SelectedGear:{
+    SelectedGearUI:{
         section:"Profile",
         scope:"profile",
         type:"string",
@@ -514,7 +514,7 @@ global SettingLayout := [
     },
 
     {
-        key:"swapCount",
+        key:"swapCountUI",
         text:"Swap Count",
         type:"number",
 
@@ -532,7 +532,7 @@ global SettingLayout := [
     },
 
     {
-        key:"untickDelay",
+        key:"untickDelayUI",
         text:"Untick Delay",
         type:"number",
 
@@ -550,7 +550,7 @@ global SettingLayout := [
     },
 
     {
-        key:"loadoutDelay",
+        key:"loadoutDelayUI",
         text:"Loadout Delay",
         type:"number",
 
@@ -568,7 +568,7 @@ global SettingLayout := [
     },
 
     {
-        key:"finalLoadout",
+        key:"finalLoadoutUI",
         text:"Final Loadout",
         type:"number",
 
@@ -587,7 +587,7 @@ global SettingLayout := [
 
 
     {
-        key:"advancedDelay",
+        key:"advancedDelayUI",
         text:"Advanced Loadout`nDelay",
         type:"toggle",
 
@@ -604,7 +604,7 @@ global SettingLayout := [
     },
 
     {
-        key:"closeInventory",
+        key:"closeInventoryUI",
         text:"Close Inventory",
         type:"toggle",
 
@@ -619,7 +619,7 @@ global SettingLayout := [
     },
 
     {
-        key:"dl3074",
+        key:"dl3074UI",
         text:"3074 DL",
         type:"toggle",
 
@@ -634,7 +634,7 @@ global SettingLayout := [
     },
 
     {
-        key:"swapTimer",
+        key:"swapTimerUI",
         text:"Swap Counter",
         type:"toggle",
 
@@ -650,7 +650,7 @@ global SettingLayout := [
 
 
     {
-        key:"selectedLoadouts",
+        key:"selectedLoadoutsUI",
         text:"Loadouts",
         type:"loadoutList",
 
@@ -666,7 +666,7 @@ global SettingLayout := [
 
 
     {
-        key:"OpenMenuHotkey",
+        key:"OpenMenuHotkeyUI",
         text:"Open Menu",
         type:"hotkey",
 
@@ -681,7 +681,7 @@ global SettingLayout := [
     },
 
     {
-        key:"UL3074Hotkey",
+        key:"UL3074HotkeyUI",
         text:"3074 UL",
         type:"hotkey",
 
@@ -696,7 +696,7 @@ global SettingLayout := [
     },
 
     {
-        key:"DL3074Hotkey",
+        key:"DL3074HotkeyUI",
         text:"3074 DL",
         type:"hotkey",
 
@@ -711,7 +711,7 @@ global SettingLayout := [
     },
 
     {
-        key:"UL27kHotkey",
+        key:"UL27kHotkeyUI",
         text:"27k UL",
         type:"hotkey",
 
@@ -730,16 +730,16 @@ global SettingLayout := [
 
 LoadCurrentLoadoutsUI()
 {
-    global Profiles, State, LoadoutSlots
+    global Profiles, State, LoadoutSlots, SettingsFile
 
     for _, slot in LoadoutSlots
     {
         slot.selected := false
         slot.selectedAnim := 0
     }
-
-    selected := Profiles[State.class][State.profile].selectedLoadouts
-
+    
+    selected := Profiles[State.class][State.profile].selectedLoadoutsUI
+    
     for _, id in selected
     {
         if LoadoutSlots.Has(id)
@@ -758,8 +758,8 @@ SaveCurrentLoadouts()
         if slot.selected
             selected.Push(id)
     }
-
-    Profiles[State.class][State.profile].selectedLoadouts := selected
+    
+    Profiles[State.class][State.profile].selectedLoadoutsUI := selected
 
     SaveSettings(true)
 }
@@ -924,7 +924,7 @@ SaveSettings(saveSelectedLoadouts := false)
                 if schema.scope != "profile"
                     continue
 
-                if key = "selectedLoadouts" && !saveSelectedLoadouts
+                if key = "selectedLoadoutsUI" && !saveSelectedLoadouts
                     continue
 
                 value := profile.%key%
@@ -1090,7 +1090,7 @@ CancelMenu()
 
     LoadSettingsUI()
 
-    State.class := GlobalSettings.CurrentPreset
+    State.class := GlobalSettings.CurrentPresetUI
 
     LoadCurrentProfile()
     LoadCurrentLoadoutsUI()
@@ -1110,7 +1110,7 @@ HandleHotkeyInput(setting, vk)
 
     key := VKToEnglish(vk)
 
-    if !key
+    if (key == "")
         return
 
     result := ""
@@ -1398,7 +1398,7 @@ OpenMenuGUI(*)
 
     LoadSettingsUI()
 
-    State.class := GlobalSettings.CurrentPreset
+    State.class := GlobalSettings.CurrentPresetUI
 
     LoadCurrentProfile()
     LoadCurrentLoadoutsUI()
@@ -1762,7 +1762,7 @@ RegisterOpenMenuHotkey()
         RegisteredOpenMenuHotkey := ""
     }
 
-    rawKey := Trim(GlobalSettings.OpenMenuHotkey)
+    rawKey := Trim(GlobalSettings.OpenMenuHotkeyUI)
     if (rawKey = "" || rawKey = "None")
         return
 
@@ -2274,8 +2274,8 @@ DrawLoadoutOverlay()
     currentGear := "Helmet"
     if Profiles.Has(State.class)
         if Profiles[State.class].Has(State.profile)
-            if Profiles[State.class][State.profile].HasOwnProp("SelectedGear")
-                currentGear := Profiles[State.class][State.profile].SelectedGear
+            if Profiles[State.class][State.profile].HasOwnProp("SelectedGearUI")
+                currentGear := Profiles[State.class][State.profile].SelectedGearUI
 
     if Overlay.gearHover
     {
@@ -4249,7 +4249,7 @@ WM_LBUTTONDOWN(wParam, lParam, msg, hwnd)
                     y < yopt + optH
                 )
                 {
-                    Profiles[State.class][State.profile].SelectedGear := opt
+                    Profiles[State.class][State.profile].SelectedGearUI := opt
                     SaveSettings()
                     Overlay.gearMenuOpen := false
                     return
@@ -4329,11 +4329,12 @@ WM_LBUTTONDOWN(wParam, lParam, msg, hwnd)
 
             State.class := name
 
-            GlobalSettings.CurrentPreset := name
+            GlobalSettings.CurrentPresetUI := name
             SaveSettings()
 
             LoadCurrentProfile()
             LoadCurrentLoadoutsUI()
+            LoadSettingsUI()
 
             return
         }
@@ -4360,8 +4361,11 @@ WM_LBUTTONDOWN(wParam, lParam, msg, hwnd)
 
             State.profile := name
 
+
+
             LoadCurrentProfile()
             LoadCurrentLoadoutsUI()
+            LoadSettingsUI()
 
             return
         }
@@ -4392,7 +4396,7 @@ WM_LBUTTONDOWN(wParam, lParam, msg, hwnd)
 
                 SaveCurrentProfile()
 
-                GlobalSettings.CurrentPreset := State.class
+                GlobalSettings.CurrentPresetUI := State.class
 
                 SaveSettings()
 
@@ -4486,7 +4490,7 @@ BuildSettings()
 
 LoadSettingsUI()
 
-State.class := GlobalSettings.CurrentPreset
+State.class := GlobalSettings.CurrentPresetUI
 
 LoadCurrentProfile()
 
@@ -4495,6 +4499,10 @@ LoadCurrentLoadoutsUI()
 SyncUIState()
 
 SaveSettings()
+
+#Include "Loadouts Manager Updater.ahk"
+
+CheckForUpdates()
 
 MainGui := Gui("-Caption +E0x80000", "Loadouts Manager")
 
@@ -4507,7 +4515,7 @@ x := (A_ScreenWidth - WIDTH) // 2
 
 y := (A_ScreenHeight - HEIGHT) // 2
 
-openOnStart := (Trim(GlobalSettings.OpenMenuHotkey) = "" || Trim(GlobalSettings.OpenMenuHotkey) = "None")
+openOnStart := (Trim(GlobalSettings.OpenMenuHotkeyUI) = "" || Trim(GlobalSettings.OpenMenuHotkeyUI) = "None")
 if openOnStart
 {
     CreateSettingsBackup()
