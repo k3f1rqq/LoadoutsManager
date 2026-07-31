@@ -1469,17 +1469,26 @@ FinishSettingEdit(setting)
     {
         value := Integer(setting.editValue)
 
-        if value >= 1 && value <= 999
+        if value >= setting.min && value <= setting.max
         {
             setting.value := value
 
             SaveCurrentProfile()
             SaveSettings()
         }
+        else
+        {
+            setting.value := setting.oldValue
+        }
+    }
+    else
+    {
+        setting.value := setting.oldValue
     }
 
     setting.editing := false
     setting.editValue := ""
+    setting.oldValue := ""
 }
 
 UpdateModifierPreview(setting)
@@ -4454,8 +4463,9 @@ WM_LBUTTONDOWN(wParam, lParam, msg, hwnd)
                 return
             }
 
+            setting.oldValue := setting.value
             setting.editing := true
-            setting.editValue := "" setting.value
+            setting.editValue := ""
 
             return
         }

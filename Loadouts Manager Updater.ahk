@@ -1,6 +1,6 @@
 ﻿#Requires AutoHotkey v2.0
 
-global APP_VERSION := "1.0.1"
+global APP_VERSION := "1.0.2"
 
 global GITHUB_OWNER := "k3f1rqq"
 global GITHUB_REPO := "LoadoutsManager"
