@@ -466,77 +466,74 @@ WatchPixel(x, y)
 
 SendModified(key)
 {
-    modifiers := ""
-
-    alt := false
-    ctrl := false
-    shift := false
-    win := false
+    modifiers := []
 
     key := StrReplace(key, " ", "")
 
     if InStr(key, "Alt+")
     {
-        modifiers .= "{LAlt down}"
+        modifiers.Push("{LAlt down}")
         key := StrReplace(key, "Alt+")
-        alt := true
     }
 
     if InStr(key, "Ctrl+")
     {
-        modifiers .= "{LCtrl down}"
+        modifiers.Push("{LCtrl down}")
         key := StrReplace(key, "Ctrl+")
-        ctrl := true
     }
 
     if InStr(key, "Shift+")
     {
-        modifiers .= "{LShift down}"
+        modifiers.Push("{LShift down}")
         key := StrReplace(key, "Shift+")
-        shift := true
     }
 
     if InStr(key, "Win+")
     {
-        modifiers .= "{LWin down}"
+        modifiers.Push("{LWin down}")
         key := StrReplace(key, "Win+")
-        win := true
     }
 
 
-    if RegExMatch(
+    isSpecial := RegExMatch(
         key,
         "i)^(LButton|MButton|RButton|XButton1|XButton2|WheelDown|WheelUp|WheelLeft|WheelRight|CapsLock|Space|Tab|Enter|Return|Backspace|BS|Delete|Del|Insert|Ins|Home|End|PgUp|PgDn|Up|Down|Left|Right|ScrollLock|PrintScreen|Pause|Break|Escape|Esc|NumLock|Numpad\d|NumpadDot|NumpadEnter|NumpadMult|NumpadDiv|NumpadAdd|NumpadSub|F\d+)$"
     )
+
+    for _, mod in modifiers
     {
-        keyPresses := "{" key " down}{" key " up}"
+        SendEvent(mod)
+        PreciseSleep(5)
+    }
+
+    if isSpecial
+    {
+        SendEvent("{" key " down}")
+        PreciseSleep(5)
+        SendEvent("{" key " up}")
+        PreciseSleep(5)
     }
     else
     {
-        keyPresses := ""
+        for _, char in StrSplit(key)
+        {
+            SendEvent("{" char " down}")
+            PreciseSleep(5)
+        }
 
         for _, char in StrSplit(key)
-            keyPresses .= "{" char " down}"
-
-        for _, char in StrSplit(key)
-            keyPresses .= "{" char " up}"
+        {
+            SendEvent("{" char " up}")
+            PreciseSleep(5)
+        }
     }
 
-
-    Send(modifiers keyPresses)
-
-
-    if alt
-        Send("{LAlt up}")
-
-    if ctrl
-        Send("{LCtrl up}")
-
-    if shift
-        Send("{LShift up}")
-
-    if win
-        Send("{LWin up}")
+    for _, mod in modifiers
+    {
+        up := StrReplace(mod, " down}", " up}")
+        SendEvent(up)
+        PreciseSleep(5)
+    }
 }
 
 CheckInventory()
@@ -638,7 +635,7 @@ WaitForLoadoutScreen()
             (RegExMatch(loadoutColor, "0xE.E.E.") 
             || RegExMatch(loadoutColor, "0xD.D.D.")
             || LoadoutMenuStateCheck
-            || A_TickCount >= start2 + 1500)
+            || A_TickCount >= start2 + 300)
         )
             return True
     }
