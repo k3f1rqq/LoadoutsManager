@@ -470,69 +470,46 @@ SendModified(key)
 
     key := StrReplace(key, " ", "")
 
-    if InStr(key, "Alt+")
+    if InStr(key, "Alt")
     {
         modifiers.Push("{LAlt down}")
         key := StrReplace(key, "Alt+")
     }
 
-    if InStr(key, "Ctrl+")
+    if InStr(key, "Ctrl")
     {
-        modifiers.Push("{LCtrl down}")
+        modifiers.Push("{LControl down}")
         key := StrReplace(key, "Ctrl+")
     }
 
-    if InStr(key, "Shift+")
+    if InStr(key, "Shift")
     {
         modifiers.Push("{LShift down}")
         key := StrReplace(key, "Shift+")
     }
 
-    if InStr(key, "Win+")
+    if InStr(key, "Win")
     {
         modifiers.Push("{LWin down}")
         key := StrReplace(key, "Win+")
     }
 
-
-    isSpecial := RegExMatch(
-        key,
-        "i)^(LButton|MButton|RButton|XButton1|XButton2|WheelDown|WheelUp|WheelLeft|WheelRight|CapsLock|Space|Tab|Enter|Return|Backspace|BS|Delete|Del|Insert|Ins|Home|End|PgUp|PgDn|Up|Down|Left|Right|ScrollLock|PrintScreen|Pause|Break|Escape|Esc|NumLock|Numpad\d|NumpadDot|NumpadEnter|NumpadMult|NumpadDiv|NumpadAdd|NumpadSub|F\d+)$"
-    )
-
     for _, mod in modifiers
     {
-        SendEvent(mod)
+        Send(mod)
         PreciseSleep(5)
     }
 
-    if isSpecial
+    for _, char in StrSplit(key)
     {
-        SendEvent("{" key " down}")
+        Send("{" char "}")
         PreciseSleep(5)
-        SendEvent("{" key " up}")
-        PreciseSleep(5)
-    }
-    else
-    {
-        for _, char in StrSplit(key)
-        {
-            SendEvent("{" char " down}")
-            PreciseSleep(5)
-        }
-
-        for _, char in StrSplit(key)
-        {
-            SendEvent("{" char " up}")
-            PreciseSleep(5)
-        }
     }
 
     for _, mod in modifiers
     {
         up := StrReplace(mod, " down}", " up}")
-        SendEvent(up)
-        PreciseSleep(5)
+        Send(up)
     }
 }
 
