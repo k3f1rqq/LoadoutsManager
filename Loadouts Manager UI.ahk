@@ -3716,6 +3716,11 @@ PrepareTransparentFrame()
 WM_SETCURSOR(wParam, lParam, msg, hwnd)
 {
     global Buttons, Presets, ProfilesUI, UI
+
+    if !UI.visible
+        return
+    if hwnd != MainGui.Hwnd
+        return
     if Overlay.visible
     {
         gearBtnW := 120

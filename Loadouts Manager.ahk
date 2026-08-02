@@ -30,8 +30,9 @@ if !A_IsAdmin
 #Include "Loadouts Manager UI.ahk"
 
 aspect := A_ScreenWidth / A_ScreenHeight
-if (Abs(aspect - 16/9) > 0.01) {
-    MsgBox("The macro does not support resolutions other than 16:9.")
+if (Abs(aspect - 16/9) > 0.01) and (Abs(aspect - 2.37) > 0.01) {
+    MsgBox("The macro does not support resolutions other than 16:9 or 21:9.")
+    MsgBox(aspect)
     ExitApp
 }
 
@@ -46,8 +47,89 @@ global SettingsFile := A_ScriptDir "\loadouts_d2\settings.ini"
 
 LoadSettings()
 
+
+if (Abs(aspect - 16/9) <= 0.01) {
+resolution := "16:9"
 ScaleX := A_ScreenWidth / 1920
 ScaleY := A_ScreenHeight / 1080
+
+LoadoutPositions := [
+    {x:110,y:380,test:220},
+    {x:210,y:380,test:320},
+    {x:310,y:380,Test:420},
+    {x:410,y:380,Test:520},
+    {x:110,y:480,test:220},
+    {x:210,y:480,test:320},
+    {x:310,y:480,Test:420},
+    {x:410,y:480,Test:520},
+    {x:110,y:580,test:220},
+    {x:210,y:580,test:320},
+    {x:310,y:580,Test:420},
+    {x:410,y:580,Test:520},
+    {x:110,y:680,test:220},
+    {x:210,y:680,test:320},
+    {x:310,y:680,Test:420},
+    {x:410,y:680,Test:520},
+    {x:110,y:780,test:220},
+    {x:210,y:780,test:320},
+    {x:310,y:780,Test:420},
+    {x:410,y:780,Test:520}
+]
+
+GearPositions := Map(
+    "Helmet",    {x:1413, y:269},
+    "Arms",      {x:1413, y:388},
+    "Chest",     {x:1413, y:510},
+    "Legs",      {x:1413, y:628},
+    "Class Item",{x:1413, y:769}
+)
+
+WhereToTest := [740, 412, 460]
+
+timerX := 73
+timerY := 820
+}
+else if (Abs(aspect - 2.37) <= 0.01) {
+resolution := "21:9"
+ScaleX := A_ScreenWidth / 1920
+ScaleY := A_ScreenHeight / 810
+
+LoadoutPositions := [
+    {x:325,y:290,test:408},
+    {x:395,y:290,test:478},
+    {x:470,y:290,Test:551},
+    {x:540,y:290,Test:623},
+    {x:325,y:360,test:408},
+    {x:395,y:360,test:478},
+    {x:470,y:360,Test:551},
+    {x:540,y:360,Test:623},
+    {x:325,y:440,test:408},
+    {x:395,y:440,test:478},
+    {x:470,y:440,Test:551},
+    {x:540,y:440,Test:623},
+    {x:325,y:510,test:408},
+    {x:395,y:510,test:478},
+    {x:470,y:510,Test:551},
+    {x:540,y:510,Test:623},
+    {x:325,y:580,test:408},
+    {x:395,y:580,test:478},
+    {x:470,y:580,Test:551},
+    {x:540,y:580,Test:623}
+]
+
+GearPositions := Map(
+    "Helmet",    {x:1295, y:195},
+    "Arms",      {x:1295, y:279},
+    "Chest",     {x:1295, y:383},
+    "Legs",      {x:1295, y:465},
+    "Class Item",{x:1295, y:575}
+)
+
+WhereToTest := [314, 543, 350]
+
+timerX := 295
+timerY := 619
+}
 
 global QPF := 0
 DllCall("QueryPerformanceFrequency", "Int64*", &QPF)
@@ -77,37 +159,6 @@ Watching := false
 LoadoutMenuStateCheck := 0
 oldXSwap := 0
 ForcedNormalDelay := 0
-
-GearPositions := Map(
-    "Helmet",    {x:1413, y:269},
-    "Arms",      {x:1413, y:388},
-    "Chest",     {x:1413, y:510},
-    "Legs",      {x:1413, y:628},
-    "Class Item",{x:1413, y:769}
-)
-
-LoadoutPositions := [
-    {x:110,y:380,test:220},
-    {x:210,y:380,test:320},
-    {x:310,y:380,Test:420},
-    {x:410,y:380,Test:520},
-    {x:110,y:480,test:220},
-    {x:210,y:480,test:320},
-    {x:310,y:480,Test:420},
-    {x:410,y:480,Test:520},
-    {x:110,y:580,test:220},
-    {x:210,y:580,test:320},
-    {x:310,y:580,Test:420},
-    {x:410,y:580,Test:520},
-    {x:110,y:680,test:220},
-    {x:210,y:680,test:320},
-    {x:310,y:680,Test:420},
-    {x:410,y:680,Test:520},
-    {x:110,y:780,test:220},
-    {x:210,y:780,test:320},
-    {x:310,y:780,Test:420},
-    {x:410,y:780,Test:520}
-]
 
 #SingleInstance Force
 
@@ -380,7 +431,7 @@ PreciseSleep(ms)
 }
 
 LoadoutSwap(x, y, load_test_x) {
-    global ScaleX, ScaleY, LoadoutMenuStateCheck, oldXSwap, ForcedNormalDelay
+    global ScaleX, ScaleY, LoadoutMenuStateCheck, oldXSwap, ForcedNormalDelay, WhereToTest, timerX, timerY
 
     WatchLast := PixelGetColor(
                         Round(gear.x * ScaleX),
@@ -389,9 +440,9 @@ LoadoutSwap(x, y, load_test_x) {
 
     if (loadout["swapTimer"] && !((WatchChanges > loadout["swapCount"]|| start + Timeout <= A_TickCount)))
         if WatchChanges > 0
-            ToolTip(WatchChanges . "/" . loadout["swapCount"] . ",`n" . SwapTime . "s", 73 * ScaleX, 820 * ScaleY, 1)
+            ToolTip(WatchChanges . "/" . loadout["swapCount"] . ",`n" . SwapTime . "s", timerX * ScaleX, timerY * ScaleY, 1)
         if WatchChanges <= 0
-            ToolTip("0/" . loadout["swapCount"] . ",`n" . SwapTime . "s", 73 * ScaleX, 820 * ScaleY, 1)
+            ToolTip("0/" . loadout["swapCount"] . ",`n" . SwapTime . "s", timerX * ScaleX, timerY * ScaleY, 1)
 
     MouseMove(
         Round(x * ScaleX), 
@@ -410,11 +461,11 @@ LoadoutSwap(x, y, load_test_x) {
     exit := false
     loop 2
     {
-        for y in [740, 350, 430, 470]
+        for testy in WhereToTest
         {
             color := PixelGetColor(
                 Round(load_test_x * ScaleX),
-                Round(y * ScaleY)
+                Round(testy * ScaleY)
             )
 
             if RegExMatch(color, "F.F.F.")
@@ -522,20 +573,21 @@ CheckInventory()
 
     Loop 10
     {
-        invscreencolor := PixelGetColor(
-            Round(960 * ScaleX),
-            Round(1035 * ScaleY)
-        )
+        if (resolution = "16:9")
+        {
+            invscreencolor := PixelGetColor(Round(960 * ScaleX), Round(1035 * ScaleY))
+            invscreencolor2 := PixelGetColor(Round(960 * ScaleX), Round(1014 * ScaleY))
+        }
+        else if (resolution = "21:9")
+        {
+            invscreencolor := PixelGetColor(Round(960 * ScaleX), Round(776 * ScaleY))
+            invscreencolor2 := PixelGetColor(Round(960 * ScaleX), Round(761 * ScaleY))
+        }
 
-        invscreencolor2 := PixelGetColor(
-            Round(960 * ScaleX),
-            Round(1014 * ScaleY)
-        )
-
-        loadoutColor := PixelGetColor(
-            Round(77 * ScaleX),
-            Round(104 * ScaleY)
-        )
+        if resolution = "16:9"
+            loadoutColor := PixelGetColor(Round(77 * ScaleX), Round(104 * ScaleY))
+        else if resolution = "21:9"
+            loadoutColor := PixelGetColor(Round(299 * ScaleX), Round(72 * ScaleY))
 
         if (
             !RegExMatch(invscreencolor, "0xE.E.E.")
@@ -565,16 +617,19 @@ InventoryAction(State)
             PreciseSleep(700)
             Loop 40
             {
-                MouseMove(Round(50 * ScaleX), Round(A_ScreenHeight / 2), 0)
+                if resolution = "16:9"
+                    MouseMove(Round(50 * ScaleX), Round(A_ScreenHeight / 2), 0)
+                else if resolution = "21:9"
+                    MouseMove(Round(280 * ScaleX), Round(A_ScreenHeight / 2), 0)
                 Send "{Left}"
                 Send "{LButton}"
 
                 PreciseSleep(1)
 
-                loadoutColor := PixelGetColor(
-                    Round(77 * ScaleX),
-                    Round(104 * ScaleY)
-                )
+                if resolution = "16:9"
+                    loadoutColor := PixelGetColor(Round(77 * ScaleX), Round(104 * ScaleY))
+                else if resolution = "21:9"
+                    loadoutColor := PixelGetColor(Round(299 * ScaleX), Round(72 * ScaleY))
 
                 if (RegExMatch(loadoutColor, "0xE.E.E.") || RegExMatch(loadoutColor, "0xD.D.D."))
                 {
@@ -590,7 +645,10 @@ InventoryAction(State)
         else if (State == "Inventory")
         {
             Send "{Left}"
-            MouseMove(Round(50 * ScaleX), Round(A_ScreenHeight / 2), 0)
+            if resolution = "16:9"
+                MouseMove(Round(50 * ScaleX), Round(A_ScreenHeight / 2), 0)
+            else if resolution = "21:9"
+                MouseMove(Round(280 * ScaleX), Round(A_ScreenHeight / 2), 0)
             PreciseSleep(100)
         }
 }
@@ -603,10 +661,10 @@ WaitForLoadoutScreen()
     
     Loop
     {
-        loadoutColor := PixelGetColor(
-            Round(77 * ScaleX),
-            Round(104 * ScaleY)
-        )
+        if resolution = "16:9"
+            loadoutColor := PixelGetColor(Round(77 * ScaleX), Round(104 * ScaleY))
+        else if resolution = "21:9"
+            loadoutColor := PixelGetColor(Round(299 * ScaleX), Round(72 * ScaleY))
 
         if (
             (RegExMatch(loadoutColor, "0xE.E.E.") 
