@@ -1233,8 +1233,8 @@ VKToEnglish(vk)
 
 
         ; Navigation
-        33,"PageUp",
-        34,"PageDown",
+        33,"PgUp",
+        34,"PgDn",
         35,"End",
         36,"Home",
         37,"Left",

@@ -551,11 +551,9 @@ SendModified(key)
         PreciseSleep(5)
     }
 
-    for _, char in StrSplit(key)
-    {
-        Send("{" char "}")
-        PreciseSleep(5)
-    }
+    ;MsgBox("Sending: " key)
+    Send("{" key "}")
+    PreciseSleep(5)
 
     for _, mod in modifiers
     {
