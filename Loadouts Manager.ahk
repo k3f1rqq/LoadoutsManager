@@ -137,22 +137,13 @@ DllCall("QueryPerformanceFrequency", "Int64*", &QPF)
 #HotIf WinActive("ahk_exe destiny2.exe")
 
 if SwapHotkeys["27k"] != "None"
-    hotkey(
-        SwapHotkeys["27k"],
-        (*) => Swaps("27k")
-    )
+    hotkey(HotkeyConverter(SwapHotkeys["27k"]), (*) => Swaps("27k"))
 
 if SwapHotkeys["3074"] != "None"
-    hotkey(
-        SwapHotkeys["3074"],
-        (*) => Swaps("3074")
-    )
+    hotkey(HotkeyConverter(SwapHotkeys["3074"]), (*) => Swaps("3074"))
 
 if SwapHotkeys["noport"] != "None"
-    hotkey(
-        SwapHotkeys["noport"],
-        (*) => Swaps("noport")
-    ) 
+    hotkey(HotkeyConverter(SwapHotkeys["noport"]), (*) => Swaps("noport")) 
 
 WatchLast := ""
 Watching := false
@@ -433,10 +424,7 @@ PreciseSleep(ms)
 LoadoutSwap(x, y, load_test_x) {
     global ScaleX, ScaleY, LoadoutMenuStateCheck, oldXSwap, ForcedNormalDelay, WhereToTest, timerX, timerY
 
-    WatchLast := PixelGetColor(
-                        Round(gear.x * ScaleX),
-                        Round(gear.y * ScaleY),
-                    )
+    WatchLast := PixelGetColor(Round(gear.x * ScaleX), Round(gear.y * ScaleY),)
 
     if (loadout["swapTimer"] && !((WatchChanges > loadout["swapCount"]|| start + Timeout <= A_TickCount)))
         if WatchChanges > 0
@@ -515,6 +503,35 @@ WatchPixel(x, y)
 
 }
 
+HotkeyConverter(key)
+{
+    modifiers := []
+
+    key := StrReplace(key, " ", "")
+
+    if InStr(key, "Alt")
+    {
+        key := StrReplace(key, "Alt+", "!")
+    }
+
+    if InStr(key, "Ctrl")
+    {
+        key := StrReplace(key, "Ctrl+", "^")
+    }
+
+    if InStr(key, "Shift")
+    {
+        key := StrReplace(key, "Shift+", "+")
+    }
+
+    if InStr(key, "Win")
+    {
+        key := StrReplace(key, "Win+", "#")
+    }
+
+    return key = "" ? "None" : "*" key
+}
+
 SendModified(key)
 {
     modifiers := []
@@ -551,8 +568,7 @@ SendModified(key)
         PreciseSleep(5)
     }
 
-    ;MsgBox("Sending: " key)
-    Send("{" key "}")
+    Send("{Blind}{" key "}")
     PreciseSleep(5)
 
     for _, mod in modifiers

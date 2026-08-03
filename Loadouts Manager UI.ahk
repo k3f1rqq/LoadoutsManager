@@ -1100,7 +1100,7 @@ CancelMenu()
     HideMenu()
 }
 
-HandleHotkeyInput(setting, vk)
+HandleHotkeyInput(setting, vk, lParam := 0)
 {
     global
 
@@ -1108,7 +1108,9 @@ HandleHotkeyInput(setting, vk)
     shift := HotkeyState.shift
     alt := HotkeyState.alt
 
-    key := VKToEnglish(vk)
+    extended := (lParam >> 24) & 1
+
+    key := VKToEnglish(vk, extended)
 
     if (key == "")
         return
@@ -1134,9 +1136,28 @@ HandleHotkeyInput(setting, vk)
     SaveSettings()
 }
 
-VKToEnglish(vk)
+VKToEnglish(vk, extended := 1)
 {
-    static keys := Map(
+
+        static numpadNav := Map(
+            12,"Clear",
+            13,"Enter",
+            33,"PgUp",
+            34,"PgDn",
+            35,"End",
+            36,"Home",
+            37,"Left",
+            38,"Up",
+            39,"Right",
+            40,"Down",
+            45,"Ins",
+            46,"Del",
+        )
+
+        if !extended && numpadNav.Has(vk)
+            return numpadNav[vk]
+        
+        static keys := Map(
 
         ; Letters
         65,"A",
@@ -1257,22 +1278,22 @@ VKToEnglish(vk)
 
 
         ; Numpad
-        96,"Num0",
-        97,"Num1",
-        98,"Num2",
-        99,"Num3",
-        100,"Num4",
-        101,"Num5",
-        102,"Num6",
-        103,"Num7",
-        104,"Num8",
-        105,"Num9",
+        96,"Numpad0",
+        97,"Numpad1",
+        98,"Numpad2",
+        99,"Numpad3",
+        100,"Numpad4",
+        101,"Numpad5",
+        102,"Numpad6",
+        103,"Numpad7",
+        104,"Numpad8",
+        105,"Numpad9",
 
-        106,"Num*",
-        107,"Num+",
-        109,"Num-",
-        110,"Num.",
-        111,"Num/",
+        106,"NumMult",
+        107,"NumAdd",
+        109,"NumSub",
+        110,"NumpadDot",
+        111,"NumDiv",
 
 
         ; Lock keys
