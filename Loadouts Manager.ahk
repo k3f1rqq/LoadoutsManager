@@ -30,9 +30,8 @@ if !A_IsAdmin
 #Include "Loadouts Manager UI.ahk"
 
 aspect := A_ScreenWidth / A_ScreenHeight
-if (Abs(aspect - 16/9) > 0.01) and (Abs(aspect - 2.37) > 0.01) {
+if (Abs(aspect - 16/9) > 0.01) and (Abs(aspect - 2.37) > 0.03) {
     MsgBox("The macro does not support resolutions other than 16:9 or 21:9.")
-    MsgBox(aspect)
     ExitApp
 }
 
@@ -48,7 +47,7 @@ global SettingsFile := A_ScriptDir "\loadouts_d2\settings.ini"
 LoadSettings()
 
 
-if (Abs(aspect - 16/9) <= 0.01) {
+if (Abs(aspect - 16/9) <= 0.03) {
 resolution := "16:9"
 ScaleX := A_ScreenWidth / 1920
 ScaleY := A_ScreenHeight / 1080
@@ -89,7 +88,7 @@ WhereToTest := [740, 412, 460]
 timerX := 73
 timerY := 820
 }
-else if (Abs(aspect - 2.37) <= 0.01) {
+else if (Abs(aspect - 2.37) <= 0.03) {
 resolution := "21:9"
 ScaleX := A_ScreenWidth / 1920
 ScaleY := A_ScreenHeight / 810
@@ -568,7 +567,7 @@ SendModified(key)
         PreciseSleep(5)
     }
 
-    Send("{Blind}{" key "}")
+    Send("{" key "}")
     PreciseSleep(5)
 
     for _, mod in modifiers

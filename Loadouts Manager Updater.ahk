@@ -1,4 +1,4 @@
-﻿global APP_VERSION := "1.0.6"
+﻿global APP_VERSION := "1.0.7"
 
 global GITHUB_OWNER := "k3f1rqq"
 global GITHUB_REPO := "LoadoutsManager"
