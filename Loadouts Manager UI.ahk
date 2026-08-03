@@ -1100,7 +1100,7 @@ CancelMenu()
     HideMenu()
 }
 
-HandleHotkeyInput(setting, vk)
+HandleHotkeyInput(setting, vk, lParam := 0)
 {
     global
 
@@ -1108,7 +1108,12 @@ HandleHotkeyInput(setting, vk)
     shift := HotkeyState.shift
     alt := HotkeyState.alt
 
-    key := VKToEnglish(vk)
+    ; Bit 24 of lParam is the extended-key flag. The numpad nav keys
+    ; (sent when NumLock is off) share their VK with the main-keyboard
+    ; ones and are distinguished only by this flag being absent.
+    extended := (lParam >> 24) & 1
+
+    key := VKToEnglish(vk, extended)
 
     if (key == "")
         return
@@ -1134,8 +1139,28 @@ HandleHotkeyInput(setting, vk)
     SaveSettings()
 }
 
-VKToEnglish(vk)
+VKToEnglish(vk, extended := 1)
 {
+    ; With NumLock off the numpad sends these VKs without the extended
+    ; flag, while the dedicated nav cluster always sets it.
+    static numpadNav := Map(
+        12,"NumpadClear",
+        13,"NumpadEnter",
+        33,"NumpadPgUp",
+        34,"NumpadPgDn",
+        35,"NumpadEnd",
+        36,"NumpadHome",
+        37,"NumpadLeft",
+        38,"NumpadUp",
+        39,"NumpadRight",
+        40,"NumpadDown",
+        45,"NumpadIns",
+        46,"NumpadDel",
+    )
+
+    if !extended && numpadNav.Has(vk)
+        return numpadNav[vk]
+
     static keys := Map(
 
         ; Letters
@@ -1257,22 +1282,22 @@ VKToEnglish(vk)
 
 
         ; Numpad
-        96,"Num0",
-        97,"Num1",
-        98,"Num2",
-        99,"Num3",
-        100,"Num4",
-        101,"Num5",
-        102,"Num6",
-        103,"Num7",
-        104,"Num8",
-        105,"Num9",
+        96,"Numpad0",
+        97,"Numpad1",
+        98,"Numpad2",
+        99,"Numpad3",
+        100,"Numpad4",
+        101,"Numpad5",
+        102,"Numpad6",
+        103,"Numpad7",
+        104,"Numpad8",
+        105,"Numpad9",
 
-        106,"Num*",
-        107,"Num+",
-        109,"Num-",
-        110,"Num.",
-        111,"Num/",
+        106,"NumpadMult",
+        107,"NumpadAdd",
+        109,"NumpadSub",
+        110,"NumpadDot",
+        111,"NumpadDiv",
 
 
         ; Lock keys
@@ -3967,9 +3992,7 @@ WM_KEYDOWN(wParam,lParam,msg,hwnd)
             return
         }
 
-        keyName := GetKeyNameFromVK(wParam)
-
-        HandleHotkeyInput(setting, wParam)
+        HandleHotkeyInput(setting, wParam, lParam)
         return
     }
 

@@ -206,18 +206,45 @@ LoadGlobalSettings()
         IniRead(SettingsFile, "Global", "UL3074HotkeyUI", "None")
 }
 
+; The UI stores hotkeys in a display form ("Ctrl + Shift + Numpad0").
+; Hotkey() needs AHK syntax ("^+Numpad0"), so translate before binding.
+HotkeyDisplayToAhk(text)
+{
+    if text = "" || text = "None"
+        return "None"
+
+    prefix := ""
+    key := ""
+
+    for _, part in StrSplit(text, "+")
+    {
+        part := Trim(part)
+
+        switch part
+        {
+            case "Ctrl":  prefix .= "^"
+            case "Alt":   prefix .= "!"
+            case "Shift": prefix .= "+"
+            case "Win":   prefix .= "#"
+            default:      key := part
+        }
+    }
+
+    return key = "" ? "None" : prefix key
+}
+
 LoadSwapHotkeys()
 {
     global SwapHotkeys, SettingsFile
 
-    SwapHotkeys["27k"] :=
-        IniRead(SettingsFile, "SwapHotkeys", "27k", "None")
+    SwapHotkeys["27k"] := HotkeyDisplayToAhk(
+        IniRead(SettingsFile, "SwapHotkeys", "27k", "None"))
 
-    SwapHotkeys["3074"] :=
-        IniRead(SettingsFile, "SwapHotkeys", "3074", "None")
+    SwapHotkeys["3074"] := HotkeyDisplayToAhk(
+        IniRead(SettingsFile, "SwapHotkeys", "3074", "None"))
 
-    SwapHotkeys["noport"] :=
-        IniRead(SettingsFile, "SwapHotkeys", "noport", "None")
+    SwapHotkeys["noport"] := HotkeyDisplayToAhk(
+        IniRead(SettingsFile, "SwapHotkeys", "noport", "None"))
 }
 
 LoadCurrentLoadouts()
