@@ -230,7 +230,10 @@ HotkeyDisplayToAhk(text)
         }
     }
 
-    return key = "" ? "None" : prefix key
+    ; "*" fires the hotkey regardless of which other modifiers are held.
+    ; Without it CapsLock (and the shift state it implies) stops the
+    ; trigger keys from matching.
+    return key = "" ? "None" : "*" prefix key
 }
 
 LoadSwapHotkeys()
@@ -578,8 +581,10 @@ SendModified(key)
         PreciseSleep(5)
     }
 
+    ; {Blind} stops CapsLock from turning a letter key into its shifted
+    ; form, which would send the wrong key to the game.
     ;MsgBox("Sending: " key)
-    Send("{" key "}")
+    Send("{Blind}{" key "}")
     PreciseSleep(5)
 
     for _, mod in modifiers
